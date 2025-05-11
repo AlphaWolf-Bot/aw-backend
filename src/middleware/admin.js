@@ -1,21 +1,23 @@
-const adminMiddleware = (req, res, next) => {
+import { supabase } from '../config/supabase.js';
+
+export const adminMiddleware = async (req, res, next) => {
   try {
-    const adminIds = process.env.ADMIN_TELEGRAM_IDS?.split(',') || [];
-    
-    if (!adminIds.includes(req.user.telegram_id.toString())) {
-      return res.status(403).json({
-        error: true,
-        message: 'Admin access required',
-      });
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error) throw error;
+
+    if (!user || !user.is_admin) {
+      return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
     }
-    
+
     next();
   } catch (error) {
-    console.error('Admin middleware error:', error);
-    res.status(500).json({
-      error: true,
-      message: 'Internal server error',
-    });
+    console.error('Error in admin middleware:', error);
+    res.status(500).json({ error: 'Failed to verify admin status' });
   }
 };
 

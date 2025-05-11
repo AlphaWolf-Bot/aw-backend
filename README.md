@@ -1,51 +1,32 @@
-# Alpha Wulf Backend
+# Coin Tap Backend
 
-Backend API for the Alpha Wulf Telegram Mini App, built with Express.js and Supabase.
-
-## Features
-
-- Telegram Web App authentication
-- Tap-to-earn coin system
-- Social task completion rewards
-- Referral system
-- Withdrawal management
-- Admin panel
-- Game and tournament system
-
-## Tech Stack
-
-- Node.js + Express.js
-- Supabase (PostgreSQL)
-- JWT Authentication
-- Telegram Bot API
-
-## Prerequisites
-
-- Node.js 16+
-- Supabase account
-- Telegram Bot Token
+Backend server for the Coin Tap game, handling authentication, coin management, withdrawals, games, tournaments, and settings.
 
 ## Setup
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy `.env.example` to `.env` and fill in your configuration:
-   ```bash
-   cp .env.example .env
-   ```
-4. Set up Supabase:
-   - Create a new project
-   - Run the SQL migrations from `supabase/migrations`
-   - Enable Row Level Security (RLS)
-   - Set up the required functions and triggers
+1. Install dependencies:
+```bash
+npm install
+```
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+2. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
+```
+
+3. Fill in the environment variables in `.env`:
+- `PORT`: Server port (default: 3000)
+- `NODE_ENV`: Environment (development/production)
+- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_SERVICE_KEY`: Your Supabase service role key
+- `SUPABASE_ANON_KEY`: Your Supabase anonymous key
+- `JWT_SECRET`: Secret key for JWT token generation
+
+4. Start the development server:
+```bash
+npm run dev
+```
 
 ## API Endpoints
 
@@ -56,57 +37,100 @@ Backend API for the Alpha Wulf Telegram Mini App, built with Express.js and Supa
 ### Coins
 - `GET /api/coins/balance` - Get user's coin balance
 - `POST /api/coins/tap` - Earn coins by tapping
-- `POST /api/coins/task/:taskId/complete` - Complete a social task
+- `POST /api/coins/task/:taskId/complete` - Complete a task
 - `GET /api/coins/transactions` - Get transaction history
 
 ### Withdrawals
 - `GET /api/withdrawals` - Get withdrawal history
 - `POST /api/withdrawals` - Create withdrawal request
 
-### Admin
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/withdrawals` - Get all withdrawals
-- `POST /api/admin/withdrawals/:id/approve` - Approve withdrawal
-- `POST /api/admin/withdrawals/:id/reject` - Reject withdrawal
+### Games
+- `GET /api/games` - Get active games
+- `GET /api/games/:id/results` - Get game results
+- `POST /api/games` - Create new game (admin only)
+- `PATCH /api/games/:id/status` - Update game status (admin only)
+
+### Tournaments
+- `GET /api/tournaments` - Get active tournaments
+- `GET /api/tournaments/:id` - Get tournament details
+- `POST /api/tournaments/:id/join` - Join tournament
+- `POST /api/tournaments` - Create tournament (admin only)
+- `PATCH /api/tournaments/:id/status` - Update tournament status (admin only)
+
+### Settings
+- `GET /api/settings/coins` - Get coin settings
+- `GET /api/settings/withdrawals` - Get withdrawal settings
+- `PUT /api/settings/coins` - Update coin settings (admin only)
+- `PUT /api/settings/withdrawals` - Update withdrawal settings (admin only)
 
 ## Database Schema
 
-The database uses the following tables:
-- users
-- transactions
-- tasks
-- user_completed_tasks
-- withdrawals
-- games
-- game_results
-- tournaments
-- tournament_participants
-- settings
+### Users Table
+- `id`: UUID (primary key)
+- `telegram_id`: String
+- `username`: String
+- `coin_balance`: Integer
+- `total_earned`: Integer
+- `level`: Integer
+- `taps_remaining`: Integer
+- `last_tap_time`: Timestamp
+- `referral_code`: String
+- `referred_by`: UUID (foreign key to users)
+- `is_admin`: Boolean
+- `created_at`: Timestamp
 
-## Security
+### Transactions Table
+- `id`: UUID (primary key)
+- `user_id`: UUID (foreign key to users)
+- `amount`: Integer
+- `type`: String (tap, task, referral, withdrawal)
+- `created_at`: Timestamp
 
-- JWT-based authentication
-- Rate limiting on high-traffic routes
-- Input validation and sanitization
-- Row Level Security (RLS) in Supabase
-- Telegram Web App data validation
+### Withdrawals Table
+- `id`: UUID (primary key)
+- `user_id`: UUID (foreign key to users)
+- `amount`: Integer
+- `upi_id`: String
+- `status`: String (pending, approved, rejected)
+- `created_at`: Timestamp
 
-## Deployment
+### Games Table
+- `id`: UUID (primary key)
+- `title`: String
+- `description`: String
+- `start_time`: Timestamp
+- `end_time`: Timestamp
+- `status`: String (upcoming, active, completed)
+- `created_at`: Timestamp
 
-The backend is configured for deployment on Vercel:
+### Game Results Table
+- `id`: UUID (primary key)
+- `game_id`: UUID (foreign key to games)
+- `user_id`: UUID (foreign key to users)
+- `score`: Integer
+- `rank`: Integer
+- `created_at`: Timestamp
 
-1. Connect your GitHub repository to Vercel
-2. Configure environment variables in Vercel dashboard
-3. Deploy
+### Tournaments Table
+- `id`: UUID (primary key)
+- `title`: String
+- `description`: String
+- `entry_fee`: Integer
+- `prize_pool`: Integer
+- `start_time`: Timestamp
+- `end_time`: Timestamp
+- `status`: String (upcoming, active, completed)
+- `created_at`: Timestamp
 
-## Contributing
+### Tournament Participants Table
+- `id`: UUID (primary key)
+- `tournament_id`: UUID (foreign key to tournaments)
+- `user_id`: UUID (foreign key to users)
+- `score`: Integer
+- `rank`: Integer
+- `created_at`: Timestamp
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License. 
+### Settings Table
+- `key`: String (primary key)
+- `value`: JSONB
+- `updated_at`: Timestamp 
