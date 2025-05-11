@@ -5,7 +5,7 @@
   "description": "Backend for Alpha Wulf Telegram Mini App",
   "main": "src/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "build": "echo 'No build step needed for JS backend'",
     "test": "jest"
