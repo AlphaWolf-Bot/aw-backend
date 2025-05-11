@@ -20,5 +20,4 @@ export const adminMiddleware = async (req, res, next) => {
     res.status(500).json({ error: 'Failed to verify admin status' });
   }
 };
-
-module.exports = adminMiddleware; 
+export default adminMiddleware;
