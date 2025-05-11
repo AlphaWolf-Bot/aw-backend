@@ -1,7 +1,6 @@
 {
   "name": "alpha-wulf-backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "Backend for Alpha Wulf Telegram Mini App",
   "main": "src/index.js",
   "scripts": {
