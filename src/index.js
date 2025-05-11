@@ -7,7 +7,7 @@ const rateLimit = require('express-rate-limit');
 
 // Import routes
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
+const userRoutes = require('./routes/user');
 const coinRoutes = require('./routes/coins');
 const taskRoutes = require('./routes/tasks');
 const gameRoutes = require('./routes/games');
@@ -47,7 +47,7 @@ app.get('/api/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', authMiddleware, userRoutes);
+app.use('/api/user', authMiddleware, userRoutes);
 app.use('/api/coins', authMiddleware, coinRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/games', authMiddleware, gameRoutes);
