@@ -1,19 +1,11 @@
 {
   "name": "coin-tap-backend",
   "version": "1.0.0",
-<<<<<<< HEAD
-  "description": "Backend for Coin Tap game",
-  "main": "src/app.js",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-=======
   "description": "Backend for Alpha Wulf Telegram Mini App",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
->>>>>>> d754d210d64c19bf05d37108dcbe648545a9aab6
     "build": "echo 'No build step needed for JS backend'",
     "test": "jest"
   },
