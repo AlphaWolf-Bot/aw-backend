@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Wulf - Backend & Database Setup</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0F1218;
+            color: #E5E7EB;
+            font-family: 'Inter', sans-serif;
+        }
+        .gold-text {
+            color: #FFC107;
+        }
+        .code-block {
+            background-color: #1E293B;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            color: #E2E8F0;
+            font-family: 'Courier New', monospace;
+        }
+        .section {
+            border-left: 4px solid #FFC107;
+            padding-left: 1rem;
+            margin: 2rem 0;
+        }
+        .card {
+            background-color: #1E293B;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #4B5563;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid #4B5563;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            background-color: #374151;
+        }
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+        }
+        .flow-step {
+            background-color: #1E293B;
+            border: 2px solid #FFC107;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            width: 80%;
+            text-align: center;
+            position: relative;
+        }
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #FFC107;
+            font-size: 1.5rem;
+        }
+        .flow-step:last-child::after {
+            content: '';
+        }
+    </style>
+</head>
+<body class="container mx-auto px-4 py-8 max-w-5xl">
+    <header class="mb-10 text-center">
+        <h1 class="text-4xl font-bold mb-4">
+            <span class="gold-text">Alpha Wulf</span> Telegram Mini App
+        </h1>
+        <h2 class="text-2xl mb-6">Backend API & Supabase Database Integration</h2>
+        <div class="flex justify-center space-x-4 text-gray-400">
+            <div class="flex items-center">
+                <i class="fas fa-server mr-2"></i> Express.js
+            </div>
+            <div class="flex items-center">
+                <i class="fas fa-database mr-2"></i> Supabase
+            </div>
+            <div class="flex items-center">
+                <i class="fas fa-paper-plane mr-2"></i> Telegram Bot API
+            </div>
+            <div class="flex items-center">
+                <i class="fas fa-cloud mr-2"></i> Vercel
+            </div>
+        </div>
+    </header>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-sitemap mr-2"></i> Project Architecture Overview
+        </h2>
+        <div class="card">
+            <p class="mb-4">The Alpha Wulf Telegram Mini App uses a modern architecture with the following components:</p>
+            <ul class="list-disc pl-6 space-y-2">
+                <li><strong>Frontend:</strong> React.js with Telegram Web App SDK</li>
+                <li><strong>Backend:</strong> Express.js API deployed on Vercel</li>
+                <li><strong>Database:</strong> Supabase (PostgreSQL)</li>
+                <li><strong>Authentication:</strong> Telegram Login Widget</li>
+                <li><strong>Deployment:</strong> Vercel + Custom Domain (alphawolf.click)</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-database mr-2"></i> Supabase Database Schema
+        </h2>
+        <p class="mb-4">The database is structured with the following tables to support all app features:</p>
+
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Users Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>telegram_id</td>
+                        <td>BIGINT</td>
+                        <td>Telegram user ID (unique)</td>
+                    </tr>
+                    <tr>
+                        <td>username</td>
+                        <td>VARCHAR</td>
+                        <td>Telegram username</td>
+                    </tr>
+                    <tr>
+                        <td>first_name</td>
+                        <td>VARCHAR</td>
+                        <td>User's first name</td>
+                    </tr>
+                    <tr>
+                        <td>last_name</td>
+                        <td>VARCHAR</td>
+                        <td>User's last name (optional)</td>
+                    </tr>
+                    <tr>
+                        <td>coin_balance</td>
+                        <td>INTEGER</td>
+                        <td>Current balance of coins</td>
+                    </tr>
+                    <tr>
+                        <td>total_earned</td>
+                        <td>INTEGER</td>
+                        <td>Total coins earned (for level calculation)</td>
+                    </tr>
+                    <tr>
+                        <td>level</td>
+                        <td>INTEGER</td>
+                        <td>Current user level</td>
+                    </tr>
+                    <tr>
+                        <td>last_tap_time</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Last time user tapped for coins</td>
+                    </tr>
+                    <tr>
+                        <td>taps_remaining</td>
+                        <td>INTEGER</td>
+                        <td>Taps remaining in current 4-hour period</td>
+                    </tr>
+                    <tr>
+                        <td>referral_code</td>
+                        <td>VARCHAR</td>
+                        <td>Unique referral code for the user</td>
+                    </tr>
+                    <tr>
+                        <td>referred_by</td>
+                        <td>UUID</td>
+                        <td>ID of user who referred this user</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Account creation timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Transactions Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>user_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Users table</td>
+                    </tr>
+                    <tr>
+                        <td>amount</td>
+                        <td>INTEGER</td>
+                        <td>Amount of coins (positive or negative)</td>
+                    </tr>
+                    <tr>
+                        <td>type</td>
+                        <td>VARCHAR</td>
+                        <td>Transaction type (tap, task, game, referral, withdrawal)</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>TEXT</td>
+                        <td>Transaction description</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Transaction timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Tasks Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>VARCHAR</td>
+                        <td>Task title</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>TEXT</td>
+                        <td>Task description</td>
+                    </tr>
+                    <tr>
+                        <td>reward</td>
+                        <td>INTEGER</td>
+                        <td>Coins rewarded on completion</td>
+                    </tr>
+                    <tr>
+                        <td>type</td>
+                        <td>VARCHAR</td>
+                        <td>Task type (follow, subscribe, like, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td>platform</td>
+                        <td>VARCHAR</td>
+                        <td>Social platform (Twitter, YouTube, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td>link</td>
+                        <td>VARCHAR</td>
+                        <td>Link to complete the task</td>
+                    </tr>
+                    <tr>
+                        <td>active</td>
+                        <td>BOOLEAN</td>
+                        <td>Whether the task is active</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">User_Completed_Tasks Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>user_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Users table</td>
+                    </tr>
+                    <tr>
+                        <td>task_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Tasks table</td>
+                    </tr>
+                    <tr>
+                        <td>completed_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Completion timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Withdrawals Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>user_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Users table</td>
+                    </tr>
+                    <tr>
+                        <td>amount_coins</td>
+                        <td>INTEGER</td>
+                        <td>Amount of coins withdrawn</td>
+                    </tr>
+                    <tr>
+                        <td>amount_inr</td>
+                        <td>DECIMAL</td>
+                        <td>Amount in INR (1000 coins = 10 INR)</td>
+                    </tr>
+                    <tr>
+                        <td>upi_id</td>
+                        <td>VARCHAR</td>
+                        <td>UPI ID for payment</td>
+                    </tr>
+                    <tr>
+                        <td>status</td>
+                        <td>VARCHAR</td>
+                        <td>Status (pending, approved, rejected)</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Request timestamp</td>
+                    </tr>
+                    <tr>
+                        <td>processed_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Processing timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Games Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>VARCHAR</td>
+                        <td>Game name</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>TEXT</td>
+                        <td>Game description</td>
+                    </tr>
+                    <tr>
+                        <td>min_reward</td>
+                        <td>INTEGER</td>
+                        <td>Minimum reward coins</td>
+                    </tr>
+                    <tr>
+                        <td>max_reward</td>
+                        <td>INTEGER</td>
+                        <td>Maximum reward coins</td>
+                    </tr>
+                    <tr>
+                        <td>active</td>
+                        <td>BOOLEAN</td>
+                        <td>Whether the game is active</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Game_Results Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>user_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Users table</td>
+                    </tr>
+                    <tr>
+                        <td>game_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Games table</td>
+                    </tr>
+                    <tr>
+                        <td>score</td>
+                        <td>INTEGER</td>
+                        <td>User's score in the game</td>
+                    </tr>
+                    <tr>
+                        <td>reward</td>
+                        <td>INTEGER</td>
+                        <td>Coins rewarded</td>
+                    </tr>
+                    <tr>
+                        <td>played_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Gameplay timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Tournaments Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>VARCHAR</td>
+                        <td>Tournament name</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>TEXT</td>
+                        <td>Tournament description</td>
+                    </tr>
+                    <tr>
+                        <td>game_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Games table</td>
+                    </tr>
+                    <tr>
+                        <td>entry_fee</td>
+                        <td>INTEGER</td>
+                        <td>Entry fee in coins</td>
+                    </tr>
+                    <tr>
+                        <td>prize_pool</td>
+                        <td>INTEGER</td>
+                        <td>Total prize pool in coins</td>
+                    </tr>
+                    <tr>
+                        <td>start_time</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Tournament start time</td>
+                    </tr>
+                    <tr>
+                        <td>end_time</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Tournament end time</td>
+                    </tr>
+                    <tr>
+                        <td>status</td>
+                        <td>VARCHAR</td>
+                        <td>Status (upcoming, active, completed)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Tournament_Participants Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>tournament_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Tournaments table</td>
+                    </tr>
+                    <tr>
+                        <td>user_id</td>
+                        <td>UUID</td>
+                        <td>Foreign key to Users table</td>
+                    </tr>
+                    <tr>
+                        <td>score</td>
+                        <td>INTEGER</td>
+                        <td>User's score in tournament</td>
+                    </tr>
+                    <tr>
+                        <td>rank</td>
+                        <td>INTEGER</td>
+                        <td>Final ranking in tournament</td>
+                    </tr>
+                    <tr>
+                        <td>reward</td>
+                        <td>INTEGER</td>
+                        <td>Coins rewarded</td>
+                    </tr>
+                    <tr>
+                        <td>joined_at</td>
+                        <td>TIMESTAMPTZ</td>
+                        <td>Join timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Settings Table</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>UUID</td>
+                        <td>Primary key</td>
+                    </tr>
+                    <tr>
+                        <td>key</td>
+                        <td>VARCHAR</td>
+                        <td>Setting key</td>
+                    </tr>
+                    <tr>
+                        <td>value</td>
+                        <td>TEXT</td>
+                        <td>Setting value</td>
+                    </tr>
+                    <tr>
+                        <td>type</td>
+                        <td>VARCHAR</td>
+                        <td>Value type (text, number, json, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>TEXT</td>
+                        <td>Setting description</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-lock mr-2"></i> Authentication Flow
+        </h2>
+        <p class="mb-4">The app uses Telegram's native authentication flow for Mini Apps:</p>
+
+        <div class="flow-diagram">
+            <div class="flow-step">
+                User opens Alpha Wulf in Telegram
+            </div>
+            <div class="flow-step">
+                Telegram provides auth data via initData parameter
+            </div>
+            <div class="flow-step">
+                Backend validates Telegram auth data using HMAC-SHA-256
+            </div>
+            <div class="flow-step">
+                If valid, create/update user in database and return JWT token
+            </div>
+            <div class="flow-step">
+                Frontend stores JWT token for authenticated API requests
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Telegram Auth Validation Code</h3>
+            <div class="code-block">
+<pre>// Function to validate Telegram auth data
+const crypto = require('crypto');
+
+const validateTelegramAuth = (authData) => {
+  const data = {};
+  const hash = authData.hash;
+  
+  // Remove hash from verification
+  delete authData.hash;
+
+  // Create data check string
+  const dataCheckArr = Object.keys(authData)
+    .sort()
+    .map(key => `${key}=${authData[key]}`);
+  
+  const dataCheckString = dataCheckArr.join('\n');
+  
+  // Create secret key for HMAC
+  const secret = crypto
+    .createHmac('sha256', 'WebAppData')
+    .update(process.env.TELEGRAM_BOT_TOKEN)
+    .digest();
+  
+  // Get HMAC-SHA-256 signature of data check string with secret
+  const signature = crypto
+    .createHmac('sha256', secret)
+    .update(dataCheckString)
+    .digest('hex');
+
+  // Check if signatures match
+  return signature === hash;
+};</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-server mr-2"></i> Express.js API Server Setup
+        </h2>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Backend Project Structure</h3>
+            <div class="code-block">
+<pre>alpha-wulf-backend/
+├── api/
+│   ├── index.js               # Main API entry point for Vercel
+│   ├── auth.js                # Authentication routes
+│   ├── users.js               # User management routes
+│   ├── coins.js               # Coin earning/spending routes
+│   ├── tasks.js               # Social tasks routes
+│   ├── games.js               # Games and tournaments routes
+│   ├── withdrawals.js         # Withdrawal management routes
+│   ├── admin.js               # Admin panel routes
+│   └── webhooks.js            # Telegram webhook handler
+├── config/
+│   ├── supabase.js            # Supabase client setup
+│   └── jwt.js                 # JWT configuration
+├── middleware/
+│   ├── auth.js                # Authentication middleware
+│   ├── admin.js               # Admin access middleware
+│   └── rateLimiter.js         # Rate limiting middleware
+├── services/
+│   ├── telegram.js            # Telegram API integration
+│   ├── user.js                # User service functions
+│   ├── coin.js                # Coin service functions
+│   ├── game.js                # Game service functions
+│   └── task.js                # Task service functions
+├── utils/
+│   ├── validator.js           # Input validation helpers
+│   ├── timeHelpers.js         # Time-related utility functions
+│   └── responseFormatter.js   # API response formatter
+├── vercel.json                # Vercel configuration
+├── package.json
+└── .env.local                 # Environment variables (not in repo)</pre>
+            </div>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">API Server Setup with Express</h3>
+            <div class="code-block">
+<pre>// api/index.js
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+
+// Import routes
+const authRoutes = require('./auth');
+const userRoutes = require('./users');
+const coinRoutes = require('./coins');
+const taskRoutes = require('./tasks');
+const gameRoutes = require('./games');
+const withdrawalRoutes = require('./withdrawals');
+const adminRoutes = require('./admin');
+const webhookRoutes = require('./webhooks');
+
+// Import middleware
+const authMiddleware = require('../middleware/auth');
+const adminMiddleware = require('../middleware/admin');
+
+// Create Express app
+const app = express();
+
+// Apply global middlewares
+app.use(helmet());
+app.use(compression());
+app.use(express.json());
+app.use(cors({
+  origin: ['https://alphawolf.click', 'https://t.me'],
+  credentials: true,
+}));
+
+// Basic rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', authMiddleware, userRoutes);
+app.use('/api/coins', authMiddleware, coinRoutes);
+app.use('/api/tasks', authMiddleware, taskRoutes);
+app.use('/api/games', authMiddleware, gameRoutes);
+app.use('/api/withdrawals', authMiddleware, withdrawalRoutes);
+app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
+app.use('/api/webhooks', webhookRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  
+  res.status(err.statusCode || 500).json({
+    error: true,
+    message: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: true,
+    message: 'Route not found',
+  });
+});
+
+// Export for Vercel serverless function
+module.exports = app;</pre>
+            </div>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Supabase Client Configuration</h3>
+            <div class="code-block">
+<pre>// config/supabase.js
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+  },
+});
+
+module.exports = supabase;</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-code mr-2"></i> Key API Endpoints
+        </h2>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Authentication Endpoints</h3>
+            <div class="code-block">
+<pre>// api/auth.js
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const supabase = require('../config/supabase');
+const { validateTelegramAuth } = require('../services/telegram');
+
+// Login with Telegram
+router.post('/login', async (req, res) => {
+  try {
+    const { initData } = req.body;
+    
+    if (!initData) {
+      return res.status(400).json({
+        error: true,
+        message: 'Missing initData parameter',
+      });
+    }
+    
+    // Parse and validate Telegram auth data
+    const authData = Object.fromEntries(new URLSearchParams(initData));
+    
+    if (!validateTelegramAuth(authData)) {
+      return res.status(401).json({
+        error: true,
+        message: 'Invalid authentication data',
+      });
+    }
+    
+    // Extract user data
+    const userData = JSON.parse(authData.user || '{}');
+    const telegramId = userData.id;
+    
+    if (!telegramId) {
+      return res.status(400).json({
+        error: true,
+        message: 'Invalid user data',
+      });
+    }
+    
+    // Check if user exists
+    let { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('telegram_id', telegramId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
+    
+    // If user doesn't exist, create new user
+    if (!user) {
+      const referralCode = generateReferralCode(8);
+      
+      // Extract referral from query if present
+      const queryParams = new URLSearchParams(authData.start_param || '');
+      const referredBy = queryParams.get('ref');
+      
+      let referredByUserId = null;
+      
+      // If referred by someone, find the referrer
+      if (referredBy) {
+        const { data: referrer } = await supabase
+          .from('users')
+          .select('id')
+          .eq('referral_code', referredBy)
+          .single();
+          
+        if (referrer) {
+          referredByUserId = referrer.id;
+        }
+      }
+      
+      // Create new user
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          telegram_id: telegramId,
+          username: userData.username || null,
+          first_name: userData.first_name || null,
+          last_name: userData.last_name || null,
+          coin_balance: 0,
+          total_earned: 0,
+          level: 1,
+          taps_remaining: 100,
+          referral_code: referralCode,
+          referred_by: referredByUserId,
+        })
+        .select()
+        .single();
+      
+      if (createError) {
+        throw createError;
+      }
+      
+      user = newUser;
+      
+      // If referred by someone, reward them
+      if (referredByUserId) {
+        await rewardReferrer(referredByUserId, user.id);
+      }
+    }
+    
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user.id, telegramId },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    // Return user data and token
+    res.json({
+      user: {
+        id: user.id,
+        telegramId: user.telegram_id,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        coinBalance: user.coin_balance,
+        totalEarned: user.total_earned,
+        level: user.level,
+        tapsRemaining: user.taps_remaining,
+        referralCode: user.referral_code,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Authentication failed',
+    });
+  }
+});
+
+// Refresh user data
+router.get('/me', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        error: true,
+        message: 'Missing authentication token',
+      });
+    }
+    
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Get user data
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.userId)
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    if (!user) {
+      return res.status(404).json({
+        error: true,
+        message: 'User not found',
+      });
+    }
+    
+    // Return user data
+    res.json({
+      user: {
+        id: user.id,
+        telegramId: user.telegram_id,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        coinBalance: user.coin_balance,
+        totalEarned: user.total_earned,
+        level: user.level,
+        tapsRemaining: user.taps_remaining,
+        referralCode: user.referral_code,
+      },
+    });
+  } catch (error) {
+    console.error('Auth check error:', error);
+    res.status(401).json({
+      error: true,
+      message: 'Invalid or expired token',
+    });
+  }
+});
+
+// Generate a random referral code
+function generateReferralCode(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  
+  return code;
+}
+
+// Reward referrer
+async function rewardReferrer(referrerId, referredUserId) {
+  const REFERRAL_REWARD = 50;
+  
+  // Start transaction
+  const { data, error } = await supabase.rpc('reward_referrer', {
+    referrer_id: referrerId,
+    referred_user_id: referredUserId,
+    reward_amount: REFERRAL_REWARD,
+  });
+  
+  if (error) {
+    console.error('Error rewarding referrer:', error);
+  }
+}
+
+module.exports = router;</pre>
+            </div>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Coin Earning Endpoints</h3>
+            <div class="code-block">
+<pre>// api/coins.js
+const express = require('express');
+const router = express.Router();
+const supabase = require('../config/supabase');
+const { addHours, isPast } = require('date-fns');
+
+// Get user's coin balance
+router.get('/balance', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select('coin_balance, total_earned, level, taps_remaining, last_tap_time')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Check if tap reset is needed
+    if (data.last_tap_time) {
+      const resetTime = addHours(new Date(data.last_tap_time), 4);
+      
+      if (isPast(resetTime) && data.taps_remaining < 100) {
+        // Reset taps remaining
+        await supabase
+          .from('users')
+          .update({ taps_remaining: 100 })
+          .eq('id', userId);
+          
+        data.taps_remaining = 100;
+      }
+    }
+    
+    res.json({
+      coinBalance: data.coin_balance,
+      totalEarned: data.total_earned,
+      level: data.level,
+      tapsRemaining: data.taps_remaining,
+      resetTime: data.last_tap_time ? addHours(new Date(data.last_tap_time), 4).toISOString() : null,
+    });
+  } catch (error) {
+    console.error('Get balance error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to get coin balance',
+    });
+  }
+});
+
+// Earn coins by tapping
+router.post('/tap', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const COINS_PER_TAP = 5;
+    
+    // Get user's current tap status
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('taps_remaining, last_tap_time')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Check if user has taps remaining
+    if (user.taps_remaining <= 0) {
+      // Check if reset time has passed
+      if (user.last_tap_time) {
+        const resetTime = addHours(new Date(user.last_tap_time), 4);
+        
+        if (isPast(resetTime)) {
+          // Reset taps remaining
+          await supabase
+            .from('users')
+            .update({
+              taps_remaining: 99, // Subtract 1 for current tap
+              last_tap_time: new Date().toISOString(),
+            })
+            .eq('id', userId);
+        } else {
+          return res.status(429).json({
+            error: true,
+            message: 'No taps remaining',
+            resetTime: resetTime.toISOString(),
+          });
+        }
+      } else {
+        return res.status(429).json({
+          error: true,
+          message: 'No taps remaining',
+        });
+      }
+    } else {
+      // Decrement taps remaining
+      await supabase
+        .from('users')
+        .update({
+          taps_remaining: user.taps_remaining - 1,
+          last_tap_time: new Date().toISOString(),
+        })
+        .eq('id', userId);
+    }
+    
+    // Add coins to balance
+    const { data, error: updateError } = await supabase.rpc('add_coins', {
+      user_id: userId,
+      amount: COINS_PER_TAP,
+      transaction_type: 'tap',
+      description: 'Earned from tapping',
+    });
+    
+    if (updateError) {
+      throw updateError;
+    }
+    
+    // Get updated balance
+    const { data: updatedUser, error: balanceError } = await supabase
+      .from('users')
+      .select('coin_balance, total_earned, level, taps_remaining')
+      .eq('id', userId)
+      .single();
+      
+    if (balanceError) {
+      throw balanceError;
+    }
+    
+    res.json({
+      success: true,
+      coinsEarned: COINS_PER_TAP,
+      coinBalance: updatedUser.coin_balance,
+      totalEarned: updatedUser.total_earned,
+      level: updatedUser.level,
+      tapsRemaining: updatedUser.taps_remaining,
+      resetTime: addHours(new Date(), 4).toISOString(),
+    });
+  } catch (error) {
+    console.error('Tap error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to process tap',
+    });
+  }
+});
+
+// Complete social task
+router.post('/task/:taskId/complete', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { taskId } = req.params;
+    
+    // Check if task exists
+    const { data: task, error: taskError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', taskId)
+      .eq('active', true)
+      .single();
+    
+    if (taskError) {
+      return res.status(404).json({
+        error: true,
+        message: 'Task not found',
+      });
+    }
+    
+    // Check if user already completed this task
+    const { data: completed, error: completedError } = await supabase
+      .from('user_completed_tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('task_id', taskId)
+      .single();
+    
+    if (completed) {
+      return res.status(400).json({
+        error: true,
+        message: 'Task already completed',
+      });
+    }
+    
+    // Start a transaction to add coins and mark task as completed
+    const { data, error } = await supabase.rpc('complete_task', {
+      p_user_id: userId,
+      p_task_id: taskId,
+      p_reward: task.reward,
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Get updated balance
+    const { data: updatedUser, error: balanceError } = await supabase
+      .from('users')
+      .select('coin_balance, total_earned, level')
+      .eq('id', userId)
+      .single();
+      
+    if (balanceError) {
+      throw balanceError;
+    }
+    
+    res.json({
+      success: true,
+      coinsEarned: task.reward,
+      coinBalance: updatedUser.coin_balance,
+      totalEarned: updatedUser.total_earned,
+      level: updatedUser.level,
+    });
+  } catch (error) {
+    console.error('Complete task error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to complete task',
+    });
+  }
+});
+
+// Get transaction history
+router.get('/transactions', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 10 } = req.query;
+    
+    // Calculate offset
+    const offset = (page - 1) * limit;
+    
+    // Get transactions
+    const { data, error, count } = await supabase
+      .from('transactions')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) {
+      throw error;
+    }
+    
+    res.json({
+      transactions: data,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get transactions error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to get transactions',
+    });
+  }
+});
+
+module.exports = router;</pre>
+            </div>
+        </div>
+
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Withdrawal Endpoints</h3>
+            <div class="code-block">
+<pre>// api/withdrawals.js
+const express = require('express');
+const router = express.Router();
+const supabase = require('../config/supabase');
+
+// Get withdrawal history
+router.get('/', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 10 } = req.query;
+    
+    // Calculate offset
+    const offset = (page - 1) * limit;
+    
+    // Get withdrawals
+    const { data, error, count } = await supabase
+      .from('withdrawals')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) {
+      throw error;
+    }
+    
+    res.json({
+      withdrawals: data,
+      pagination: {
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get withdrawals error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to get withdrawals',
+    });
+  }
+});
+
+// Create withdrawal request
+router.post('/', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { amount, upiId } = req.body;
+    
+    // Validate input
+    if (!amount || amount < 1000 || !upiId) {
+      return res.status(400).json({
+        error: true,
+        message: 'Invalid withdrawal request. Minimum amount is 1000 coins and UPI ID is required.',
+      });
+    }
+    
+    // Check UPI ID format
+    const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+    if (!upiRegex.test(upiId)) {
+      return res.status(400).json({
+        error: true,
+        message: 'Invalid UPI ID format',
+      });
+    }
+    
+    // Get user's balance
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('coin_balance')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      throw userError;
+    }
+    
+    // Check if user has enough balance
+    if (user.coin_balance < amount) {
+      return res.status(400).json({
+        error: true,
+        message: 'Insufficient coin balance',
+      });
+    }
+    
+    // Calculate INR amount (1000 coins = 10 INR)
+    const amountInr = (amount / 1000) * 10;
+    
+    // Start transaction to create withdrawal and deduct coins
+    const { data, error } = await supabase.rpc('create_withdrawal', {
+      p_user_id: userId,
+      p_amount_coins: amount,
+      p_amount_inr: amountInr,
+      p_upi_id: upiId,
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    // Get updated balance
+    const { data: updatedUser, error: balanceError } = await supabase
+      .from('users')
+      .select('coin_balance')
+      .eq('id', userId)
+      .single();
+      
+    if (balanceError) {
+      throw balanceError;
+    }
+    
+    res.json({
+      success: true,
+      message: 'Withdrawal request submitted for approval',
+      withdrawalId: data.withdrawal_id,
+      coinBalance: updatedUser.coin_balance,
+    });
+  } catch (error) {
+    console.error('Create withdrawal error:', error);
+    res.status(500).json({
+      error: true,
+      message: 'Failed to process withdrawal request',
+    });
+  }
+});
+
+module.exports = router;</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-shield-alt mr-2"></i> Security Considerations
+        </h2>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Security Implementation</h3>
+            <p>The Alpha Wulf app implements several security measures to protect user data and prevent abuse:</p>
+            
+            <ul class="list-disc pl-6 space-y-2 mt-4">
+                <li><strong>Telegram Auth Validation:</strong> Using HMAC-SHA-256 to verify initData from Telegram</li>
+                <li><strong>JWT Authentication:</strong> Secure token-based authentication for API requests</li>
+                <li><strong>Rate Limiting:</strong> Prevent abuse through API rate limiting</li>
+                <li><strong>Input Validation:</strong> Thorough validation of all user inputs</li>
+                <li><strong>Database RLS Policies:</strong> Row-level security in Supabase to restrict data access</li>
+                <li><strong>Secure Environment Variables:</strong> Protection of sensitive configuration</li>
+                <li><strong>XSS Protection:</strong> Using Helmet.js to set security headers</li>
+            </ul>
+        </div>
+        
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Supabase RLS Policies</h3>
+            <div class="code-block">
+<pre>-- Example RLS policies for the Users table
+
+-- Enable Row Level Security
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own data
+CREATE POLICY user_read_own ON public.users
+    FOR SELECT
+    USING (auth.uid() = id);
+
+-- Users can update their own data (except admin fields)
+CREATE POLICY user_update_own ON public.users
+    FOR UPDATE
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+-- Service role can read all data
+CREATE POLICY service_read_all ON public.users
+    FOR SELECT
+    TO service_role
+    USING (true);
+
+-- Service role can update all data
+CREATE POLICY service_update_all ON public.users
+    FOR UPDATE
+    TO service_role
+    USING (true);
+
+-- Service role can insert data
+CREATE POLICY service_insert ON public.users
+    FOR INSERT
+    TO service_role
+    WITH CHECK (true);</pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-cogs mr-2"></i> Deployment Instructions
+        </h2>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">Vercel Deployment Configuration</h3>
+            <div class="code-block">
+<pre>// vercel.json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}</pre>
+            </div>
+        </div>
+        
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Environment Variables Required</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TELEGRAM_BOT_TOKEN</td>
+                        <td>Your Telegram bot token from BotFather</td>
+                    </tr>
+                    <tr>
+                        <td>SUPABASE_URL</td>
+                        <td>Your Supabase project URL</td>
+                    </tr>
+                    <tr>
+                        <td>SUPABASE_SERVICE_KEY</td>
+                        <td>Your Supabase service role key</td>
+                    </tr>
+                    <tr>
+                        <td>SUPABASE_ANON_KEY</td>
+                        <td>Your Supabase anonymous key</td>
+                    </tr>
+                    <tr>
+                        <td>JWT_SECRET</td>
+                        <td>Secret key for JWT token signing</td>
+                    </tr>
+                    <tr>
+                        <td>ADMIN_TELEGRAM_IDS</td>
+                        <td>Comma-separated list of admin Telegram IDs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card mt-6">
+            <h3 class="text-xl font-semibold mb-2">Deployment Steps</h3>
+            <ol class="list-decimal pl-6 space-y-2">
+                <li>Set up a Supabase project and create the necessary tables</li>
+                <li>Create a Telegram bot with BotFather and note the token</li>
+                <li>Configure your bot with BotFather to enable Mini App functionality</li>
+                <li>Set up a Vercel account and link it to your GitHub repository</li>
+                <li>Configure environment variables in Vercel dashboard</li>
+                <li>Deploy the backend to Vercel</li>
+                <li>Deploy the frontend to Vercel and configure your custom domain (alphawolf.click)</li>
+                <li>Add the Mini App to your Telegram bot using BotFather</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="text-2xl font-bold mb-4 gold-text">
+            <i class="fas fa-check-circle mr-2"></i> Testing and Verification
+        </h2>
+        
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-2">API Testing Endpoints</h3>
+            <p>Use the following endpoints to test your API functionality:</p>
+            
+            <table class="mt-4">
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Method</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/api/health</td>
+                        <td>GET</td>
+                        <td>Check API health status</td>
+                    </tr>
+                    <tr>
+                        <td>/api/auth/login</td>
+                        <td>POST</td>
+                        <td>Authenticate with Telegram initData</td>
+                    </tr>
+                    <tr>
+                        <td>/api/auth/me</td>
+                        <td>GET</td>
+                        <td>Get current user data with JWT token</td>
+                    </tr>
+                    <tr>
+                        <td>/api/coins/balance</td>
+                        <td>GET</td>
+                        <td>Get user coin balance</td>
+                    </tr>
+                    <tr>
+                        <td>/api/coins/tap</td>
+                        <td>POST</td>
+                        <td>Earn coins by tapping</td>
+                    </tr>
+                    <tr>
+                        <td>/api/tasks</td>
+                        <td>GET</td>
+                        <td>Get available social tasks</td>
+                    </tr>
+                    <tr>
+                        <td>/api/coins/task/:id/complete</td>
+                        <td>POST</td>
+                        <td>Complete a social task</td>
+                    </tr>
+                    <tr>
+                        <td>/api/games</td>
+                        <td>GET</td>
+                        <td>Get available games</td>
+                    </tr>
+                    <tr>
+                        <td>/api/withdrawals</td>
+                        <td>POST</td>
+                        <td>Submit withdrawal request</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer class="mt-16 text-center text-gray-400 py-4 border-t border-gray-800">
+        <p class="mb-2">Alpha Wulf Telegram Mini App Backend & Database Setup</p>
+        <p>© 2025 Alpha Wulf. All rights reserved.</p>
+    </footer>
+</body>
+</html>
