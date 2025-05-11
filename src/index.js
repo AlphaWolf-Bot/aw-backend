@@ -17,8 +17,7 @@ const webhookRoutes = require('./routes/webhooks');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
-import adminMiddleware from './middleware/admin.js';
-
+const adminMiddleware = require('./middleware/admin'); // ✅ FIXED
 
 // Create Express app
 const app = express();
@@ -35,18 +34,18 @@ app.use(cors({
 // Basic rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(limiter);
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// API routes
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', authMiddleware, userRoutes);
 app.use('/api/coins', authMiddleware, coinRoutes);
@@ -56,10 +55,9 @@ app.use('/api/withdrawals', authMiddleware, withdrawalRoutes);
 app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
-// Error handling middleware
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  
   res.status(err.statusCode || 500).json({
     error: true,
     message: err.message || 'Internal Server Error',
@@ -81,4 +79,4 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = app; 
+module.exports = app;
