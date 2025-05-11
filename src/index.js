@@ -17,7 +17,8 @@ const webhookRoutes = require('./routes/webhooks');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
-const adminMiddleware = require('./middleware/admin');
+import adminMiddleware from './middleware/admin.js';
+
 
 // Create Express app
 const app = express();
