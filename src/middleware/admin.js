@@ -1,5 +1,4 @@
-// middleware/admin.js
-const supabase = require('../config/supabase');
+const { supabase } = require('../config/supabase');
 
 const adminMiddleware = async (req, res, next) => {
   try {
