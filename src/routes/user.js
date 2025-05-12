@@ -1,7 +1,7 @@
-import express from 'express';
-import { supabase } from '../config/supabase.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { adminMiddleware } from '../middleware/admin.js';
+const express = require('express');
+const { supabase } = require('../config/supabase');
+const authMiddleware = require('../middleware/auth');
+const adminMiddleware = require('../middleware/admin');
 
 const router = express.Router();
 
@@ -38,7 +38,6 @@ router.get('/profile', authMiddleware, async (req, res) => {
 // Get user's referral stats
 router.get('/referrals', authMiddleware, async (req, res) => {
   try {
-    // Get total referrals
     const { data: referrals, error: referralsError } = await supabase
       .from('users')
       .select('id')
@@ -46,7 +45,6 @@ router.get('/referrals', authMiddleware, async (req, res) => {
 
     if (referralsError) throw referralsError;
 
-    // Get referral earnings
     const { data: earnings, error: earningsError } = await supabase
       .from('transactions')
       .select('amount')
@@ -78,7 +76,6 @@ router.get('/level', authMiddleware, async (req, res) => {
 
     if (error) throw error;
 
-    // Get level settings
     const { data: settings, error: settingsError } = await supabase
       .from('settings')
       .select('value')
@@ -169,4 +166,4 @@ router.patch('/:userId', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-export default router; 
+module.exports = router;
