@@ -166,4 +166,5 @@ router.patch('/:userId', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// Export the router for use in other files
 module.exports = router;
