@@ -1,6 +1,7 @@
-import { supabase } from '../config/supabase.js';
+// middleware/admin.js
+const supabase = require('../config/supabase');
 
-export const adminMiddleware = async (req, res, next) => {
+const adminMiddleware = async (req, res, next) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
@@ -20,4 +21,5 @@ export const adminMiddleware = async (req, res, next) => {
     res.status(500).json({ error: 'Failed to verify admin status' });
   }
 };
-export default adminMiddleware;
+
+module.exports = adminMiddleware;
