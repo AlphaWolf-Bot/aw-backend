@@ -13,7 +13,7 @@ const taskRoutes = require('./routes/tasks');
 const gameRoutes = require('./routes/games');
 const withdrawalRoutes = require('./routes/withdrawals');
 const adminRoutes = require('./routes/admin');
-const webhookRoutes = require('./routes/webhooks');
+const webhookRoutes = require('./routes/webhook');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
