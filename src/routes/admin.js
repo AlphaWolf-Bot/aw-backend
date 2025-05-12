@@ -1,7 +1,8 @@
+// routes/admin.js
 const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
-const { authenticateAdmin } = require('../middleware/auth');
+const authenticateAdmin = require('../middleware/admin');
 
 // Apply admin authentication middleware to all routes
 router.use(authenticateAdmin);
@@ -125,4 +126,4 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
