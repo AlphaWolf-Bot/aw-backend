@@ -17,7 +17,6 @@ const webhookRoutes = require('./routes/webhook');
 
 // Import middleware
 const authMiddleware = require('./middleware/auth');
-const adminMiddleware = require('./middleware/admin'); // ✅ FIXED
 
 // Create Express app
 const app = express();
@@ -52,7 +51,7 @@ app.use('/api/coins', authMiddleware, coinRoutes);
 app.use('/api/tasks', authMiddleware, taskRoutes);
 app.use('/api/games', authMiddleware, gameRoutes);
 app.use('/api/withdrawals', authMiddleware, withdrawalRoutes);
-app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
+app.use('/api/admin', authMiddleware, adminRoutes); // ✅ Fixed: Removed redundant adminMiddleware
 app.use('/api/webhooks', webhookRoutes);
 
 // Error handler
